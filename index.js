@@ -16,6 +16,7 @@ app.use(bodyParser.json());
 
 const HTTP_OK_STATUS = 200;
 const PORT = '3000';
+const FILE = 'talker.json';
 
 // não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
@@ -23,12 +24,12 @@ app.get('/', (_request, response) => {
 });
 
 app.get('/talker', async (_req, res) => {
-  const content = await readFile('talker.json');
+  const content = await readFile(FILE);
   res.status(200).json(JSON.parse(content));
 });
 
 app.get('/talker/:id', async (req, res) => {
-  const content = await readFile('talker.json');
+  const content = await readFile(FILE);
   const { id } = req.params;
   const talkerById = JSON.parse(content).find((talker) => talker.id === parseInt(id, 10));
   if (!talkerById) {
@@ -45,13 +46,32 @@ app.post('/talker',
   validateWatchedAt,
   validateRate,
   async (req, res) => {
-    const content = JSON.parse(await readFile('talker.json'));
+    const content = JSON.parse(await readFile(FILE));
     const id = content.length + 1;
     const talkerInfo = req.body;
     const newTalker = { id, ...talkerInfo };
     content.push(newTalker);
-    await writeFile('talker.json', JSON.stringify(content));
+    await writeFile(FILE, JSON.stringify(content));
     res.status(201).json(newTalker);
+});
+
+app.put('/talker/:id',
+  authMiddleware,
+  validateName,
+  validateAge,
+  validateTalk,
+  validateWatchedAt,
+  validateRate,
+  async (req, res) => {
+    const content = JSON.parse(await readFile(FILE));
+    const { id } = req.params;
+    const parsedId = parseInt(id, 10);
+    const newTalkerInfo = req.body;
+    const talkerIndex = content.findIndex((talker) => talker.id === parsedId);
+    const updatedTalker = { id: parsedId, ...newTalkerInfo };
+    content[talkerIndex] = updatedTalker;
+    await writeFile(FILE, JSON.stringify(content));
+    res.status(200).json(updatedTalker);
 });
 
 app.post('/login', validateLogin, (_req, res) => {
