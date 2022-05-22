@@ -74,6 +74,15 @@ app.put('/talker/:id',
     res.status(200).json(updatedTalker);
 });
 
+app.delete('/talker/:id', authMiddleware, async (req, res) => {
+  const content = JSON.parse(await readFile(FILE));
+  const { id } = req.params;
+  const talkerIndex = content.findIndex((talker) => talker.id === parseInt(id, 10));
+  content.splice(talkerIndex, 1);
+  await writeFile(FILE, JSON.stringify(content));
+  res.status(204).end();
+});
+
 app.post('/login', validateLogin, (_req, res) => {
   const token = crypto.randomBytes(8).toString('hex');
   res.status(200).json({ token });
