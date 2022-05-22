@@ -23,6 +23,14 @@ app.get('/', (_request, response) => {
   response.status(HTTP_OK_STATUS).send();
 });
 
+app.get('/talker/search', authMiddleware, async (req, res) => {
+  const content = await readFile(FILE);
+  const { q } = req.query;
+  if (!q) return res.status(200).json(JSON.parse(content));
+  const talkerByNameSearch = JSON.parse(content).filter((talker) => talker.name.includes(q));
+  res.status(200).json(talkerByNameSearch);
+});
+
 app.get('/talker', async (_req, res) => {
   const content = await readFile(FILE);
   res.status(200).json(JSON.parse(content));
